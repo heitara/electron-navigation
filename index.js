@@ -24,6 +24,7 @@ var Color = require('color.js');
 var urlRegex = require('url-regex');
 const contextMenu = require('electron-context-menu')
 var globalCloseableTabsOverride;
+const path = require('path');
 /**
  * OBJECT
  */
@@ -39,10 +40,11 @@ function Navigation(options) {
         showAddTabButton: true,
         closableTabs: true,
         verticalTabs: false,
-        defaultFavicons: false,
+        defaultFavicons: true,
         newTabCallback: null,
         changeTabCallback: null,
-        newTabParams: null
+        newTabParams: null,
+        iconSpinEnabled: false
     };
     options = options ? Object.assign(defaults,options) : defaults;
     /**
@@ -53,6 +55,8 @@ function Navigation(options) {
     this.newTabCallback = options.newTabCallback;
     this.changeTabCallback = options.changeTabCallback;
     this.SESSION_ID = 1;
+    this.iconSpinEnabled = options.iconSpinEnabled;
+    this.currentFavIcon = null;
     if (options.defaultFavicons) {
         this.TAB_ICON = "default";
     } else {
@@ -249,7 +253,10 @@ function Navigation(options) {
             tab = $('.nav-tabs-tab.active');
         }
 
-        tab.find('.nav-tabs-favicon').css('animation', 'nav-spin 2s linear infinite');
+        if (this.iconSpinEnabled) {
+            tab.find('.nav-tabs-favicon').css('animation', 'nav-spin 2s linear infinite');
+        }
+        tab.find('.nav-tabs-favicon').attr('src', path.join(__dirname, ...["resources", "ajax-loader.gif"]));
         $('#nav-ctrls-reload').html(this.SVG_CLEAR);
     } //:_loading()
     //
@@ -262,7 +269,10 @@ function Navigation(options) {
             tab = $('.nav-tabs-tab.active');
         }
 
-        tab.find('.nav-tabs-favicon').css('animation', '');
+        if (this.iconSpinEnabled) {
+            tab.find('.nav-tabs-favicon').css('animation', '');
+        }
+        tab.find('.nav-tabs-favicon').attr('src', this.currentFavIcon);
         $('#nav-ctrls-reload').html(this.SVG_RELOAD);
     } //:_stopLoading()
     //
@@ -353,6 +363,7 @@ function Navigation(options) {
             }
         });
         webview[0].addEventListener('page-favicon-updated', (res) => {
+            NAV.currentFavIcon = res.favicons[0];
             if (options.icon == 'clean') {
                 NAV._setTabColor(res.favicons[0], currtab);
             } else if (options.icon == 'default') {
@@ -416,7 +427,7 @@ Navigation.prototype.newTab = function (url, options) {
         id: null, // null, 'yourIdHere'
         node: false,
         webviewAttributes: {},
-        icon: "clean", // 'default', 'clean', 'c:\location\to\image.png'
+        icon: "default", // 'default', 'clean', 'c:\location\to\image.png'
         title: "default", // 'default', 'your title here'
         close: true,
         readonlyUrl: false,
