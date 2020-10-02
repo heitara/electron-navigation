@@ -308,6 +308,10 @@ function Navigation(options) {
         let currtab = $('.nav-tabs-tab[data-session="' + sessionID + '"]');
         let webview = $('.nav-views-view[data-session="' + sessionID + '"]');
 
+        let hideCursorFromAddressBar = function () {
+            $('#nav-ctrls-url').blur();
+        }
+
         webview.on('dom-ready', function () {
             if (options.contextMenu) {
                 contextMenu({
@@ -334,6 +338,7 @@ function Navigation(options) {
         });
         webview.on('did-stop-loading', function () {
             NAV._stopLoading(currtab);
+            hideCursorFromAddressBar();
         });
         webview.on('enter-html-full-screen', function () {
             $('.nav-views-view.active').siblings().not('script').hide();
