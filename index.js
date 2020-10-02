@@ -43,6 +43,7 @@ function Navigation(options) {
         defaultFavicons: true,
         newTabCallback: null,
         changeTabCallback: null,
+        closingTabWithId: null,
         newTabParams: null,
         iconSpinEnabled: false
     };
@@ -54,6 +55,7 @@ function Navigation(options) {
     const NAV = this;
     this.newTabCallback = options.newTabCallback;
     this.changeTabCallback = options.changeTabCallback;
+    this.closingTabWithId = options.closingTabWithId;
     this.SESSION_ID = 1;
     this.iconSpinEnabled = options.iconSpinEnabled;
     this.currentFavIcon = null;
@@ -127,6 +129,11 @@ function Navigation(options) {
             } else {
                 session.prev().addClass('active');
                 (NAV.changeTabCallback || (() => {}))(session.prev()[1]);
+            }
+        }
+        if (NAV.closingTabWithId) {
+            if(session[1]) {
+                options.closingTabWithId(session[1].id)
             }
         }
         session.remove();
@@ -564,7 +571,11 @@ Navigation.prototype.closeTab = function (id) {
         session.prev().addClass('active');
         (this.changeTabCallback || (() => {}))(session.prev()[1]);
     }
-
+    if (NAV.closingTabWithId) {
+        if(session[1]) {
+            options.closingTabWithId(session[1].id)
+        }
+    }
     session.remove();
     this._updateUrl();
     this._updateCtrls();
