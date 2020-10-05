@@ -131,11 +131,7 @@ function Navigation(options) {
                 (NAV.changeTabCallback || (() => {}))(session.prev()[1]);
             }
         }
-        if (NAV.closingTabWithId) {
-            if(session[1]) {
-                options.closingTabWithId(session[1].id)
-            }
-        }
+        NAV._callOptionHandlers(session);
         session.remove();
         NAV._updateUrl();
         NAV._updateCtrls();
@@ -217,6 +213,13 @@ function Navigation(options) {
     /**
      * FUNCTIONS
      */
+    this._callOptionHandlers = function(session) {
+        if (options.closingTabWithId) {
+            if(session[1]) {
+                options.closingTabWithId(session[1].id)
+            }
+        }
+    }
     //
     // update controls like back, forward, etc...
     //
@@ -571,11 +574,7 @@ Navigation.prototype.closeTab = function (id) {
         session.prev().addClass('active');
         (this.changeTabCallback || (() => {}))(session.prev()[1]);
     }
-    if (NAV.closingTabWithId) {
-        if(session[1]) {
-            options.closingTabWithId(session[1].id)
-        }
-    }
+    this._callOptionHandlers();
     session.remove();
     this._updateUrl();
     this._updateCtrls();
