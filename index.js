@@ -45,7 +45,8 @@ function Navigation(options) {
         changeTabCallback: null,
         closingTabWithId: null,
         newTabParams: null,
-        iconSpinEnabled: false
+        iconSpinEnabled: false,
+        newWindowHandler: true
     };
     options = options ? Object.assign(defaults,options) : defaults;
     /**
@@ -58,6 +59,7 @@ function Navigation(options) {
     this.closingTabWithId = options.closingTabWithId;
     this.SESSION_ID = 1;
     this.iconSpinEnabled = options.iconSpinEnabled;
+    this.newWindowHandler = options.newWindowHandler;
     this.currentFavIcon = null;
     if (options.defaultFavicons) {
         this.TAB_ICON = "default";
@@ -370,13 +372,15 @@ function Navigation(options) {
         webview[0].addEventListener('did-navigate-in-page', (res) => {
             NAV._updateUrl(res.url);
         });
-        webview[0].addEventListener("new-window", (res) => {
-            if (!(options.newWindowFrameNameBlacklistExpression instanceof RegExp && options.newWindowFrameNameBlacklistExpression.test(res.frameName))) {
-                NAV.newTab(res.url, {
-                    icon: NAV.TAB_ICON
-                });
-            }
-        });
+        if(options.newWindowHandler) {
+            webview[0].addEventListener("new-window", (res) => {
+                if (!(options.newWindowFrameNameBlacklistExpression instanceof RegExp && options.newWindowFrameNameBlacklistExpression.test(res.frameName))) {
+                    NAV.newTab(res.url, {
+                        icon: NAV.TAB_ICON
+                    });
+                }
+            });
+        }
         webview[0].addEventListener('page-favicon-updated', (res) => {
             NAV.currentFavIcon = res.favicons[0];
             if (options.icon == 'clean') {
@@ -448,7 +452,8 @@ Navigation.prototype.newTab = function (url, options) {
         readonlyUrl: false,
         contextMenu: true,
         newTabCallback: this.newTabCallback,
-        changeTabCallback: this.changeTabCallback
+        changeTabCallback: this.changeTabCallback,
+        newWindowHandler: this.newWindowHandler
     }
     options = options ? Object.assign(defaults,options) : defaults;
     if(typeof options.newTabCallback === "function"){
