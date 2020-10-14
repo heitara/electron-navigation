@@ -2,7 +2,7 @@
  * @author      Jeremy England
  * @license     MIT
  * @description Adds tabs, views, and controls to specified containers in node.js electron.
- * @requires    electron, jquery, color.js, electron-context-menu, url-regex
+ * @requires    electron, jquery, color.js, electron-context-menu
  * @see         https://github.com/simply-coded/electron-navigation
  * @tutorial
  *  Add these IDs to your html (containers don't have to be divs).
@@ -21,11 +21,20 @@
  */
 var $ = require('jquery');
 var Color = require('color.js');
-var urlRegex = require('url-regex');
 var sortable = require('sortablejs');
 const contextMenu = require('electron-context-menu')
 var globalCloseableTabsOverride;
 const path = require('path');
+const URL = require("url").URL;
+
+const stringIsAValidUrl = (s) => {
+    try {
+        new URL(s);
+        return true;
+    } catch (err) {
+        return false;
+    }
+};
 /**
  * OBJECT
  */
@@ -308,10 +317,7 @@ function Navigation(options) {
     // auto add http protocol to url input or do a search
     //
     this._purifyUrl = function (url) {
-        if (urlRegex({
-                strict: false,
-                exact: true
-            }).test(url)) {
+        if (stringIsAValidUrl(url)) {
             url = (url.match(/^https?:\/\/.*/)) ? url : 'http://' + url;
         } else {
             url = (!url.match(/^[a-zA-Z]+:\/\//)) ? 'https://www.google.com/search?q=' + url.replace(' ', '+') : url;
