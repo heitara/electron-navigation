@@ -284,7 +284,6 @@ function Navigation(options) {
         if (this.iconSpinEnabled) {
             tab.find('.nav-tabs-favicon').css('animation', '');
         }
-        tab.find('.nav-tabs-favicon').attr('src', this.currentFavIcon);
         $('#nav-ctrls-reload').html(this.SVG_RELOAD);
     } //:_stopLoading()
     //
@@ -382,7 +381,7 @@ function Navigation(options) {
             });
         }
         webview[0].addEventListener('page-favicon-updated', (res) => {
-            NAV.currentFavIcon = res.favicons[0];
+            // NAV.currentFavIcon = res.favicons[0];
             if (options.icon == 'clean') {
                 NAV._setTabColor(res.favicons[0], currtab);
             } else if (options.icon == 'default') {
