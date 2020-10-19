@@ -381,7 +381,6 @@ function Navigation(options) {
             });
         }
         webview[0].addEventListener('page-favicon-updated', (res) => {
-            // NAV.currentFavIcon = res.favicons[0];
             if (options.icon == 'clean') {
                 NAV._setTabColor(res.favicons[0], currtab);
             } else if (options.icon == 'default') {
