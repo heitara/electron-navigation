@@ -2,7 +2,7 @@
  * @author      Jeremy England
  * @license     MIT
  * @description Adds tabs, views, and controls to specified containers in node.js electron.
- * @requires    electron, jquery, color.js, electron-context-menu, url-regex
+ * @requires    electron, jquery, color.js, electron-context-menu
  * @see         https://github.com/simply-coded/electron-navigation
  * @tutorial
  *  Add these IDs to your html (containers don't have to be divs).
@@ -21,10 +21,20 @@
  */
 var $ = require('jquery');
 var Color = require('color.js');
-var urlRegex = require('url-regex');
+var sortable = require('sortablejs');
 const contextMenu = require('electron-context-menu')
 var globalCloseableTabsOverride;
 const path = require('path');
+const URL = require("url").URL;
+
+const stringIsAValidUrl = (s) => {
+    try {
+        new URL(s);
+        return true;
+    } catch (err) {
+        return false;
+    }
+};
 /**
  * OBJECT
  */
@@ -46,7 +56,10 @@ function Navigation(options) {
         closingTabWithId: null,
         newTabParams: null,
         iconSpinEnabled: false,
-        newWindowHandler: true
+        newWindowHandler: true,
+        newTabButtonDefaultHandler: true,
+        dragTabs: false,
+        dragOptions: null
     };
     options = options ? Object.assign(defaults,options) : defaults;
     /**
@@ -61,6 +74,8 @@ function Navigation(options) {
     this.iconSpinEnabled = options.iconSpinEnabled;
     this.newWindowHandler = options.newWindowHandler;
     this.currentFavIcon = null;
+    this.dragTabs = options.dragTabs;
+    this.dragOptions = options.dragOptions || {};
     if (options.defaultFavicons) {
         this.TAB_ICON = "default";
     } else {
@@ -87,6 +102,9 @@ function Navigation(options) {
     if (options.showUrlBar) {
         $('#nav-body-ctrls').append('<input id="nav-ctrls-url" type="text" title="Enter an address or search term"/>')
     }
+    if(options.dragTabs) {
+        $('#nav-body-tabs').append('<div id="nav-body-subtabs"> </div>');
+    }
     if (options.showAddTabButton) {
         $('#nav-body-tabs').append('<i id="nav-tabs-add" class="nav-icons" title="Add new tab">' + this.SVG_ADD + '</i>');
     }
@@ -94,9 +112,9 @@ function Navigation(options) {
      * ADD CORE STYLE
      */
     if (options.verticalTabs) {
-        $('head').append('<style id="nav-core-styles">#nav-body-ctrls,#nav-body-tabs,#nav-body-views,.nav-tabs-tab{display:flex;align-items:center;}#nav-body-tabs{overflow:auto;min-height:32px;flex-direction:column;}#nav-ctrls-url{box-sizing:border-box;}.nav-tabs-tab{min-width:60px;width:100%;min-height:20px;}.nav-icons{fill:#000;width:24px;height:24px}.nav-icons.disabled{pointer-events:none;opacity:.5}#nav-ctrls-url{flex:1;height:24px}.nav-views-view{flex:0 1;width:0;height:0}.nav-views-view.active{flex:1;width:100%;height:100%}.nav-tabs-favicon{align-content:flex-start}.nav-tabs-title{flex:1;cursor:default;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.nav-tabs-close{align-content:flex-end}@keyframes nav-spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style>');
+        $('head').append('<style id="nav-core-styles">#nav-body-ctrls,#nav-body-tabs,#nav-body-subtabs,#nav-body-views,.nav-tabs-tab{display:flex;align-items:center;}#nav-body-tabs, #nav-body-subtabs{overflow:auto;min-height:32px;flex-direction:column;}#nav-ctrls-url{box-sizing:border-box;}.nav-tabs-tab{min-width:60px;width:100%;min-height:20px;}.nav-icons{fill:#000;width:24px;height:24px}.nav-icons.disabled{pointer-events:none;opacity:.5}#nav-ctrls-url{flex:1;height:24px}.nav-views-view{flex:0 1;width:0;height:0}.nav-views-view.active{flex:1;width:100%;height:100%}.nav-tabs-favicon{align-content:flex-start}.nav-tabs-title{flex:1;cursor:default;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.nav-tabs-close{align-content:flex-end}@keyframes nav-spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style>');
     } else {
-        $('head').append('<style id="nav-core-styles">#nav-body-ctrls,#nav-body-tabs,#nav-body-views,.nav-tabs-tab{display:flex;align-items:center}#nav-body-tabs{overflow:auto;min-height:32px;}#nav-ctrls-url{box-sizing:border-box;}.nav-tabs-tab{min-width:60px;width:180px;min-height:20px;}.nav-icons{fill:#000;width:24px;height:24px}.nav-icons.disabled{pointer-events:none;opacity:.5}#nav-ctrls-url{flex:1;height:24px}.nav-views-view{flex:0 1;width:0;height:0}.nav-views-view.active{flex:1;width:100%;height:100%}.nav-tabs-favicon{align-content:flex-start}.nav-tabs-title{flex:1;cursor:default;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.nav-tabs-close{align-content:flex-end}@keyframes nav-spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style>');
+        $('head').append('<style id="nav-core-styles">#nav-body-ctrls,#nav-body-tabs,#nav-body-subtabs,#nav-body-views,.nav-tabs-tab{display:flex;align-items:center}#nav-body-tabs, #nav-body-subtabs{overflow:auto;min-height:32px;}#nav-ctrls-url{box-sizing:border-box;}.nav-tabs-tab{min-width:60px;width:180px;min-height:20px;}.nav-icons{fill:#000;width:24px;height:24px}.nav-icons.disabled{pointer-events:none;opacity:.5}#nav-ctrls-url{flex:1;height:24px}.nav-views-view{flex:0 1;width:0;height:0}.nav-views-view.active{flex:1;width:100%;height:100%}.nav-tabs-favicon{align-content:flex-start}.nav-tabs-title{flex:1;cursor:default;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.nav-tabs-close{align-content:flex-end}@keyframes nav-spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style>');
     }
     /**
      * EVENTS
@@ -142,21 +160,23 @@ function Navigation(options) {
     //
     // add a tab, default to google.com
     //
-    $('#nav-body-tabs').on('click', '#nav-tabs-add', function () {
-        let params;
-        if(typeof options.newTabParams === "function"){
-            params = options.newTabParams();
-        }
-        else if(options.newTabParams instanceof Array){
-            params = options.newTabParams
-        } else {
-            params = ['http://www.google.com/', {
-                close: options.closableTabs,
-                icon: NAV.TAB_ICON
-            }];
-        }
-        NAV.newTab(...params);
-    });
+    if(options.newTabButtonDefaultHandler) {
+        $('#nav-body-tabs').on('click', '#nav-tabs-add', function () {
+            let params;
+            if(typeof options.newTabParams === "function"){
+                params = options.newTabParams();
+            }
+            else if(options.newTabParams instanceof Array){
+                params = options.newTabParams
+            } else {
+                params = ['http://www.google.com/', {
+                    close: options.closableTabs,
+                    icon: NAV.TAB_ICON
+                }];
+            }
+            NAV.newTab(...params);
+        });
+    }
     //
     // go back
     //
@@ -212,6 +232,12 @@ function Navigation(options) {
             }
         }
     });
+    if(this.dragTabs) {
+        var el = document.getElementById("nav-body-subtabs");
+        this.sortable = sortable.create(el, this.dragOptions);
+    } else {
+        this.sortable = null;
+    }
     /**
      * FUNCTIONS
      */
@@ -290,10 +316,7 @@ function Navigation(options) {
     // auto add http protocol to url input or do a search
     //
     this._purifyUrl = function (url) {
-        if (urlRegex({
-                strict: false,
-                exact: true
-            }).test(url)) {
+        if (stringIsAValidUrl(url)) {
             url = (url.match(/^https?:\/\/.*/)) ? url : 'http://' + url;
         } else {
             url = (!url.match(/^[a-zA-Z]+:\/\//)) ? 'https://www.google.com/search?q=' + url.replace(' ', '+') : url;
@@ -504,9 +527,17 @@ Navigation.prototype.newTab = function (url, options) {
     tab += '</span>';
     // add tab to correct position
     if ($('#nav-body-tabs').has('#nav-tabs-add').length) {
-        $('#nav-tabs-add').before(tab);
+        if(!this.dragTabs) {
+            $('#nav-tabs-add').before(tab);
+        } else {
+            $('#nav-body-subtabs').append(tab);
+        }
     } else {
-        $('#nav-body-tabs').append(tab);
+        if(!this.dragTabs) {
+            $('#nav-body-tabs').append(tab);
+        } else {
+            $('#nav-body-subtabs').append(tab);
+        }
     }
     // add webview    
     let composedWebviewTag = `<webview class="nav-views-view active" data-session="${this.SESSION_ID}" src="${this._purifyUrl(url)}"`;
