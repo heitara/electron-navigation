@@ -76,8 +76,16 @@ function Navigation(options) {
     this.newWindowHandler = options.newWindowHandler;
     this.currentFavIcon = null;
     this.dragTabs = options.dragTabs;
+    this._onChoose = function (evt) {
+        let tab = document.getElementsByClassName("nav-tabs-tab").item(evt.oldIndex);
+        let tabSessionId = tab.getAttribute("data-session");
+        NAV.goToTab(tabSessionId);
+    }
     this.dragOptions = options.dragOptions || {};
     this.defaultLandingPageUrl = options.defaultLandingPageUrl;
+    if(this.dragTabs) {
+        this.dragOptions.onChoose = this._onChoose;
+    }
     if (options.defaultFavicons) {
         this.TAB_ICON = "default";
     } else {
