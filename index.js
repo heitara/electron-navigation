@@ -59,7 +59,8 @@ function Navigation(options) {
         newWindowHandler: true,
         newTabButtonDefaultHandler: true,
         dragTabs: false,
-        dragOptions: null
+        dragOptions: null,
+        defaultLandingPageUrl: "Enter a URL"
     };
     options = options ? Object.assign(defaults,options) : defaults;
     /**
@@ -81,6 +82,7 @@ function Navigation(options) {
         NAV.goToTab(tabSessionId);
     }
     this.dragOptions = options.dragOptions || {};
+    this.defaultLandingPageUrl = options.defaultLandingPageUrl;
     if(this.dragTabs) {
         this.dragOptions.onChoose = this._onChoose;
     }
@@ -108,7 +110,7 @@ function Navigation(options) {
         $('#nav-body-ctrls').append('<i id="nav-ctrls-reload" class="nav-icons disabled" title="Reload page">' + this.SVG_RELOAD + '</i>');
     }
     if (options.showUrlBar) {
-        $('#nav-body-ctrls').append('<input id="nav-ctrls-url" type="text" title="Enter an address or search term"/>')
+        $('#nav-body-ctrls').append('<input id="nav-ctrls-url" type="text" placeholder="' + this.defaultLandingPageUrl + '"/>')
     }
     if(options.dragTabs) {
         $('#nav-body-tabs').append('<div id="nav-body-subtabs"> </div>');
@@ -446,7 +448,6 @@ function Navigation(options) {
     // update #nav-ctrls-url to given url or active tab's url
     //
     this._updateUrl = function (url) {
-        url = url || null;
         urlInput = $('#nav-ctrls-url');
         if (url == null) {
             if ($('.nav-views-view').length) {
