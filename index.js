@@ -819,7 +819,7 @@ Navigation.prototype.prevTab = function () {
     $($('.nav-tabs-tab')[nexti]).trigger('click');
     return false
 } //:prevTab()
-// go to a tab by index or keyword
+// go to a tab by data-session or keyword
 //
 Navigation.prototype.goToTab = function (index) {
     $activeTabAndView = $('#nav-body-tabs .nav-tabs-tab.active, #nav-body-views .nav-views-view.active');
@@ -831,7 +831,7 @@ Navigation.prototype.goToTab = function (index) {
     } else if (index == 'last') {
         $tabAndViewToActivate = $('#nav-body-tabs .nav-tabs-tab:last-of-type, #nav-body-views .nav-views-view:last-of-type');
     } else {
-        $tabAndViewToActivate = $('#nav-body-tabs .nav-tabs-tab:nth-of-type(' + index + '), #nav-body-views .nav-views-view:nth-of-type(' + index + ')');
+        $tabAndViewToActivate = $('#nav-body-tabs .nav-tabs-tab, #nav-body-views .nav-views-view').filter('[data-session="' + index + '"]');
     }
 
     if ($tabAndViewToActivate.length) {
@@ -842,17 +842,7 @@ Navigation.prototype.goToTab = function (index) {
         this._updateUrl();
         this._updateCtrls();
     }
-} //:goToTab()
-// go to a tab by id of the webview tag
-Navigation.prototype.goToTabByWebviewId = function(id){
-    const webviews = document.querySelectorAll("webview.nav-views-view");
-    for(let index in webviews){
-        if(webviews[index].id == id){
-            this.goToTab(+index + 1);
-            return;
-        }
-    }
-} //:goToTabByWebviewId()
+}
 /**
  * MODULE EXPORTS
  */
