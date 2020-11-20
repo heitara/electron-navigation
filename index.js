@@ -83,6 +83,7 @@ function Navigation(options) {
     }
     this.dragOptions = options.dragOptions || {};
     this.defaultLandingPageUrl = options.defaultLandingPageUrl;
+    this.showUrlBar = options.showUrlBar;
     if(this.dragTabs) {
         this.dragOptions.onChoose = this._onChoose;
     }
@@ -472,6 +473,7 @@ function Navigation(options) {
         }
     } //:_updateUrl()
 } //:Navigation()
+
 /**
  * PROTOTYPES
  */
@@ -843,6 +845,15 @@ Navigation.prototype.goToTab = function (index) {
         this._updateCtrls();
     }
 }
+//
+// set addressbar placeholder text
+//
+Navigation.prototype.setAddressBarPlaceholderText = function (text) {
+    if (this.showUrlBar) {
+        $('#nav-ctrls-url').attr('placeholder', text)
+    }
+} //:setAddressBarPlaceholderText
+
 /**
  * MODULE EXPORTS
  */
