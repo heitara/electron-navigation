@@ -464,7 +464,7 @@ function Navigation(options) {
         } else {
             urlInput.on('blur', function () {
                 // if url not edited
-                if (urlInput.val() == urlInput.data('last')) {
+                if (urlInput.val() == urlInput.data('last') || url.length === 0) {
                     urlInput.prop('value', url);
                     urlInput.data('last', url);
                 }
