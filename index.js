@@ -111,7 +111,7 @@ function Navigation(options) {
         $('#nav-body-ctrls').append('<i id="nav-ctrls-reload" class="nav-icons disabled" title="Reload page">' + this.SVG_RELOAD + '</i>');
     }
     if (options.showUrlBar) {
-        $('#nav-body-ctrls').append('<input id="nav-ctrls-url" type="text" placeholder="' + this.defaultLandingPageUrl + '"/>')
+        $('#nav-body-ctrls').append('<input id="nav-ctrls-url" type="text"spellcheck="false"  placeholder="' + this.defaultLandingPageUrl + '"/>')
     }
     if(options.dragTabs) {
         $('#nav-body-tabs').append('<div id="nav-body-subtabs"> </div>');
