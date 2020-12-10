@@ -144,8 +144,8 @@ function Navigation(options) {
         var session = $('.nav-views-view[data-session="' + sessionID + '"]')[0];
         (NAV.changeTabCallback || (() => {}))(session);
         NAV._updateUrl(session.getURL());
-        NAV._updateCtrls();        
-        
+        NAV._updateCtrls();
+
         //
         // close tab and view
         //
@@ -163,6 +163,7 @@ function Navigation(options) {
             }
         }
         NAV._callOptionHandlers(session);
+        NAV._removeContextMenu()
         session.remove();
         NAV._updateUrl();
         NAV._updateCtrls();
@@ -284,13 +285,13 @@ function Navigation(options) {
             this._loading();
         } else {
             this._stopLoading();
-        }         
+        }
         if (webview.getAttribute('data-readonly') == 'true') {
             $('#nav-ctrls-url').attr('readonly', 'readonly');
         } else {
             $('#nav-ctrls-url').removeAttr('readonly');
-        }        
-
+        }
+        this._updateContextMenu(webview)
     } //:_updateCtrls()
     //
     // start loading animations
@@ -366,17 +367,7 @@ function Navigation(options) {
 
         webview.on('dom-ready', function () {
             if (options.contextMenu) {
-                contextMenu({
-                    window: webview[0],
-                    labels: {
-                        cut: 'Cut',
-                        copy: 'Copy',
-                        paste: 'Paste',
-                        save: 'Save',
-                        copyLink: 'Copy Link',
-                        inspect: 'Inspect'
-                    }
-                });
+                NAV._updateContextMenu(webview[0])
             }
         });
         webview.on('page-title-updated', function () {
@@ -472,6 +463,21 @@ function Navigation(options) {
             });
         }
     } //:_updateUrl()
+
+    this._contextMenuDispose = null
+    this._updateContextMenu = function(webview) {
+        NAV._removeContextMenu()
+        const options = {
+            window: webview
+        }
+        Object.assign(options, NAV.getContextMenuOptions())
+        NAV._contextMenuDispose = contextMenu(options);
+    }
+    this._removeContextMenu = function() {
+        if (NAV._contextMenuDispose) {
+            NAV._contextMenuDispose()
+        }
+    }
 } //:Navigation()
 
 /**
@@ -559,9 +565,9 @@ Navigation.prototype.newTab = function (url, options) {
             $('#nav-body-subtabs').append(tab);
         }
     }
-    // add webview    
+    // add webview
     let composedWebviewTag = `<webview class="nav-views-view active" data-session="${this.SESSION_ID}" src="${this._purifyUrl(url)}"`;
-    
+
     composedWebviewTag += ` data-readonly="${((options.readonlyUrl) ? 'true': 'false')}"`;
     if (options.id) {
         composedWebviewTag += ` id=${options.id}`;
@@ -574,7 +580,7 @@ Navigation.prototype.newTab = function (url, options) {
             composedWebviewTag += ` ${key}="${options.webviewAttributes[key]}"`;
         });
     }
-    $('#nav-body-views').append(`${composedWebviewTag}></webview>`);    
+    $('#nav-body-views').append(`${composedWebviewTag}></webview>`);
     // enable reload button
     $('#nav-ctrls-reload').removeClass('disabled');
 
@@ -629,6 +635,7 @@ Navigation.prototype.closeTab = function (id) {
         (this.changeTabCallback || (() => {}))(session.prev()[1]);
     }
     this._callOptionHandlers();
+    this._removeContextMenu()
     session.remove();
     this._updateUrl();
     this._updateCtrls();
@@ -853,6 +860,19 @@ Navigation.prototype.setAddressBarPlaceholderText = function (text) {
         $('#nav-ctrls-url').attr('placeholder', text)
     }
 } //:setAddressBarPlaceholderText
+
+Navigation.prototype.getContextMenuOptions = function () {
+    return {
+        labels: {
+            cut: 'Cut',
+            copy: 'Copy',
+            paste: 'Paste',
+            save: 'Save',
+            copyLink: 'Copy Link',
+            inspect: 'Inspect'
+        }
+    }
+}
 
 /**
  * MODULE EXPORTS
