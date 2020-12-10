@@ -874,6 +874,10 @@ Navigation.prototype.getContextMenuOptions = function () {
     }
 }
 
+Navigation.prototype.updateContextMenu = function () {
+    this._updateContextMenu($('.nav-views-view.active')[0])
+}
+
 /**
  * MODULE EXPORTS
  */
