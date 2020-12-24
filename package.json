@@ -39,7 +39,7 @@
   "license": "MIT",
   "dependencies": {
     "color.js": "^0.1.3",
-    "electron-context-menu": "^2.3.0",
+    "electron-context-menu": "https://github.com/heitara/electron-context-menu",
     "jquery": "^3.5.1",
     "sortablejs": "^1.12.0"
   },
